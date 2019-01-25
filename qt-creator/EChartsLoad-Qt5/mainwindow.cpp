@@ -16,7 +16,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pWebEngineView = new QWebEngineView(this);
     m_pWebEngineView->setContextMenuPolicy(Qt::NoContextMenu);
 
-    QString htmlPath = "E:/GitProj/EChartsLoad-Qt5/qt-creator/Echart/cable_dts.html";
+    QString htmlPath = "E:/GitProj/EChartsLoad-Qt5/Echart - sample/cable_dts.html";
 
     m_pWebEngineView->load(QUrl(htmlPath));
     connect(m_pWebEngineView,SIGNAL(loadFinished(bool)),this,SLOT(loadEchart()));
