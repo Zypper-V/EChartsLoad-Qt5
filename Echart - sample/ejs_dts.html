@@ -1,0 +1,132 @@
+﻿<!doctype html public "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>My Demo Chart</title>
+<script type="text/javascript" src="EJSChart/EJSChart.js"> </script>
+<script type="text/javascript" src="EJSChart/EJSChart.min.js"> </script>
+<script type="text/javascript" src="EJSChart/query-1.10.2.min.js"> </script>
+</head>
+<body>
+<div id="myFirstChart" style="width:1300px; height:600px;"></div>
+<script type="text/javascript">
+var dtsChart = new EJSC.Chart("myFirstChart", {
+                title:"DTS曲线",
+				show_titlebar: true,
+				show_legend: true,
+				show_messages: true,
+				allow_mouse_wheel_zoom: true,
+				allow_interactivity: true,
+				allow_move: true,
+				allow_zoom: true,
+				auto_zoom: 'y',
+				auto_find_point_by_x: true,
+				axis_bottom: {
+					caption: '距离(米)',
+					crosshair: {
+                        color : 'rgb(180,180,180)',
+                        show: true
+                    },
+					min_extreme: 0,
+					max_extreme: 10000,
+					formatter: new EJSC.StringFormatter({
+						onNeedsFormat: function(value, formatter) {
+							return (value==-1) ? '-1.0' : Math.floor(value / 10) + '.' + Math.round(Math.abs(value) % 10);
+						}
+					})
+				},
+				axis_left: {
+					caption: '温度(℃)',
+					crosshair: {
+                        color : 'rgb(180,180,180)',
+                        show: true
+                    },
+					min_extreme: 0,
+					max_extreme: 100
+				}
+			});
+
+
+var hitStr =  '距离:[x]米<br/>温度:[y]℃';
+var titles = ['A相','B相','C相'];
+var colors = ['#ff0000','#00ff00','#0000ff'];
+var series = new Array();
+var datas = new Array();
+for(var i=0;i<3;i++)
+{
+    datas[i] = new Array();
+    series[i] = dtsChart.addSeries(new EJSC.LineSeries(new EJSC.ArrayDataHandler(datas[i]), {
+		intervalOffset: .9,
+		title:titles[i],
+		color:colors[i],		
+		hint_string:hitStr
+	}));
+}
+function loadData()
+{ 
+    var json = {"data":{"time":"2016-11-25 16:27:39","chart":{"yminvalue":0,"ymaxvalue":25,"yname":"温度[°C]","store":[{"x":"0.00","a":"14.3","b":"15.5","c":"14.1"},{"x":"0.49","a":"14.3","b":"15.3","c":"13.9"},{"x":"0.98","a":"14.1","b":"15.3","c":"13.8"},{"x":"1.47","a":"13.9","b":"15.2","c":"14.2"},{"x":"1.96","a":"13.9","b":"15.1","c":"14.2"},{"x":"2.45","a":"14.2","b":"14.8","c":"14.2"},{"x":"2.94","a":"14.3","b":"14.9","c":"14.3"},{"x":"3.43","a":"14.3","b":"15.2","c":"14.2"},{"x":"3.92","a":"14.1","b":"15.4","c":"14.6"},{"x":"4.41","a":"14.1","b":"15.3","c":"14.6"},{"x":"4.90","a":"14.0","b":"15.0","c":"14.5"},{"x":"5.39","a":"14.0","b":"14.9","c":"14.6"},{"x":"5.88","a":"13.9","b":"15.1","c":"14.4"},{"x":"6.37","a":"14.1","b":"15.4","c":"14.2"},{"x":"6.86","a":"13.9","b":"15.3","c":"13.8"},{"x":"7.35","a":"13.9","b":"14.8","c":"14.4"},{"x":"7.84","a":"14.1","b":"14.7","c":"14.6"},{"x":"8.33","a":"14.3","b":"14.3","c":"14.3"},{"x":"8.82","a":"14.5","b":"14.3","c":"14.1"},{"x":"9.31","a":"14.9","b":"14.6","c":"14.1"},{"x":"9.80","a":"15.2","b":"15.0","c":"14.4"},{"x":"10.29","a":"15.4","b":"14.4","c":"14.4"},{"x":"10.78","a":"15.5","b":"14.0","c":"14.4"},{"x":"11.27","a":"15.5","b":"13.7","c":"14.0"},{"x":"11.76","a":"15.5","b":"13.7","c":"13.8"},{"x":"12.25","a":"15.4","b":"13.6","c":"14.0"},{"x":"12.74","a":"15.5","b":"14.1","c":"13.9"},{"x":"13.23","a":"15.5","b":"13.9","c":"13.9"},{"x":"13.72","a":"15.3","b":"14.1","c":"14.2"},{"x":"14.21","a":"15.4","b":"13.8","c":"14.0"},{"x":"14.70","a":"15.7","b":"14.0","c":"14.1"}],"lines":{"a":{"color":"#F9F900","name":"A相"},"b":{"color":"#9AFF02","name":"B相"},"c":{"color":"#FF0000","name":"C相"}},"xname":"距离[M]"}},"success":true};
+	loadFile(json);
+}
+function clearData()
+{
+    for(var i=0;i<3;i++)
+	{
+		series[i].getDataHandler().setArray([]);
+		series[i].reload();		
+    }	
+}
+function loadFile(data)
+{ 
+    var res =data;
+    if(res.success)
+	{
+		var chartinfo = res.data.chart;                   
+		var resdatas = chartinfo.store;
+		var ymin = chartinfo.yminvalue;
+		var ymax = chartinfo.ymaxvalue;
+		var xmin = 0xffffffff;
+		var xmax = 0;  
+		var phases = ['a','b','c']; 
+		for(var j=0;j<resdatas.length;j++)
+		{
+			var resdata = resdatas[j];
+			var x = null;
+			x = parseFloat(resdata.x)*10;
+			if(x >= xmax)
+			{
+			   xmax = x;
+			}
+			if(x <= xmin)
+			{
+			   xmin = x;
+			} 
+			for(var k=0;k<phases.length;k++)
+			{
+				var y = parseFloat(resdata[phases[k]]);                            
+				datas[k].push([x,y]);
+			}               
+		}  
+		
+		if(xmax >= xmin)
+		{
+			dtsChart.axis_bottom.setExtremes(xmin,xmax+5);                   
+		}
+		if(ymax >= ymin)
+		{
+			dtsChart.axis_left.setExtremes(ymin,ymax);
+		}
+		
+		if(series)
+		{  
+			for(var i=0;i<series.length;i++)
+			{
+				series[i].getDataHandler().setArray(datas[i]);  
+				series[i].setColor(chartinfo.lines[phases[i]].color);   
+				series[i].setTitle(chartinfo.lines[phases[i]].name);                     
+				series[i].reload();
+			} 
+		}		
+	} 
+}
+</script>
+</body>
+</html>
